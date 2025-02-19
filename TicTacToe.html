@@ -1,0 +1,598 @@
+<!--
+  This code is written by Irtaza Zafar
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tic Tac Toe - Enhanced Compact Experience</title>
+  <style>
+    /* CSS Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    /* Theme Variables */
+    :root {
+      --bg-color: #f5f7fa;
+      --text-color: #333;
+      --primary-color: #3498db;
+      --secondary-color: #2ecc71;
+      --cell-bg: #ffffff;
+      --cell-border: #ddd;
+      --button-bg: #3498db;
+      --button-hover-bg: #2ecc71;
+      --x-color: #e74c3c;
+      --o-color: #2980b9;
+      --container-bg: #ffffff;
+      --container-shadow: rgba(0, 0, 0, 0.1);
+    }
+    body.dark-theme {
+      --bg-color: #2c3e50;
+      --text-color: #ecf0f1;
+      --primary-color: #9b59b6;
+      --secondary-color: #e74c3c;
+      --cell-bg: #34495e;
+      --cell-border: #7f8c8d;
+      --button-bg: #9b59b6;
+      --button-hover-bg: #e74c3c;
+      --x-color: #e74c3c;
+      --o-color: #2980b9;
+      --container-bg: #3a4750;
+      --container-shadow: rgba(0, 0, 0, 0.5);
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      transition: background-color 0.5s, color 0.5s;
+      padding: 15px;
+    }
+    
+    .container {
+      background-color: var(--container-bg);
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      max-width: 350px;
+      box-shadow: 0 4px 6px var(--container-shadow);
+      text-align: center;
+      position: relative;
+    }
+    
+    header h1 {
+      font-size: 2em;
+      margin-bottom: 8px;
+    }
+    
+    /* Scoreboard styling */
+    #scoreboard {
+      margin-bottom: 10px;
+      font-size: 1.1em;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    
+    /* Timer display */
+    #timerDisplay {
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+    
+    /* Game board grid styling */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 0 auto 10px;
+      width: 100%;
+      max-width: 300px;
+      position: relative; /* For winning line positioning */
+    }
+    
+    .cell {
+      background-color: var(--cell-bg);
+      border: 2px solid var(--cell-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5em;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      aspect-ratio: 1 / 1;
+      position: relative;
+    }
+    
+    .cell:hover {
+      background-color: var(--secondary-color);
+      transform: scale(1.05);
+    }
+    
+    /* Animation for a move on the cell */
+    .cell.animate {
+      animation: pop 0.3s ease-out;
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Fixed colors for X and O */
+    .x {
+      color: var(--x-color);
+    }
+    
+    .o {
+      color: var(--o-color);
+    }
+    
+    /* Animated winning line with RGB cycle */
+    #winningLine {
+      position: absolute;
+      height: 5px;
+      top: 0;
+      left: 0;
+      transform-origin: 0 50%;
+      opacity: 0;
+      transition: opacity 0.5s, width 0.5s;
+      animation: rgbCycle 2s infinite linear;
+    }
+    
+    @keyframes rgbCycle {
+      0% { background-color: red; }
+      25% { background-color: orange; }
+      50% { background-color: yellow; }
+      75% { background-color: green; }
+      100% { background-color: blue; }
+    }
+    
+    /* Message styling */
+    .message {
+      font-size: 1.1em;
+      height: 1.5em;
+      margin-bottom: 10px;
+      transition: opacity 0.3s;
+    }
+    
+    /* Controls styling */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .controls button {
+      padding: 8px 15px;
+      font-size: 0.9em;
+      background-color: var(--button-bg);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      flex: 1 1 120px;
+      max-width: 140px;
+    }
+    
+    .controls button:hover {
+      background-color: var(--button-hover-bg);
+    }
+    
+    /* Modal styling for Help */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: var(--container-bg);
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      text-align: left;
+      color: var(--text-color);
+    }
+    
+    .close {
+      color: var(--text-color);
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .close:hover,
+    .close:focus {
+      color: var(--secondary-color);
+    }
+    
+    @media (max-width: 500px) {
+      header h1 {
+        font-size: 1.8em;
+      }
+      .cell {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!--
+    This code is written by Irtaza Zafar
+  -->
+  <div class="container">
+    <header>
+      <h1>Tic Tac Toe</h1>
+    </header>
+    
+    <div id="scoreboard">
+      <span id="scoreX">X: 0</span>
+      <span id="scoreO">O: 0</span>
+    </div>
+    
+    <div id="timerDisplay">Time Left: 10s</div>
+    
+    <div id="gameBoard" class="board">
+      <div id="winningLine"></div>
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+      <div class="cell" data-index="8"></div>
+    </div>
+    
+    <div id="message" class="message"></div>
+    
+    <div class="controls">
+      <button id="restartBtn">Restart Game</button>
+      <button id="themeToggle">Toggle Theme</button>
+      <button id="modeToggle">Switch to Single Player</button>
+      <button id="helpBtn">Help</button>
+    </div>
+  </div>
+  
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>How to Play</h2>
+      <p>Welcome to Tic Tac Toe!</p>
+      <ul>
+        <li>Two players take turns placing X and O on the board.</li>
+        <li>The first player to align three marks horizontally, vertically, or diagonally wins.</li>
+        <li>You have 10 seconds to make each move. If time runs out, the turn will switch.</li>
+        <li>In Single Player mode, you play as X against an AI opponent (O) that always makes the best move.</li>
+        <li>Enjoy the game!</li>
+      </ul>
+    </div>
+  </div>
+  
+  <script>
+    // This code is written by Irtaza Zafar
+    // Game variables and DOM elements
+    const cells = document.querySelectorAll('.cell');
+    const messageEl = document.getElementById('message');
+    const restartBtn = document.getElementById('restartBtn');
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const modeToggleBtn = document.getElementById('modeToggle');
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('helpModal');
+    const closeModal = document.querySelector('.close');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const winningLine = document.getElementById('winningLine');
+    const gameBoard = document.getElementById('gameBoard');
+
+    let board = Array(9).fill('');
+    let currentPlayer = 'X';
+    let gameActive = true;
+    let scoreX = 0;
+    let scoreO = 0;
+    let isSinglePlayer = false; // false = Two Player, true = Single Player
+    let moveTimeLimit = 10; // seconds per move
+    let remainingTime = moveTimeLimit;
+    let timerInterval;
+    let winningCombinationFound = null;
+    
+    // Winning conditions array
+    const winningConditions = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+    
+    // Timer Functions
+    function startTimer() {
+      clearTimer();
+      remainingTime = moveTimeLimit;
+      updateTimerDisplay();
+      // Start timer only for human moves (or in two-player mode)
+      if (!isSinglePlayer || currentPlayer === 'X') {
+        timerInterval = setInterval(() => {
+          remainingTime--;
+          updateTimerDisplay();
+          if (remainingTime <= 0) {
+            clearTimer();
+            messageEl.textContent = "Time's up! Switching turn.";
+            switchTurn();
+          }
+        }, 1000);
+      } else {
+        timerDisplay.textContent = "AI is thinking...";
+      }
+    }
+    
+    function clearTimer() {
+      clearInterval(timerInterval);
+    }
+    
+    function updateTimerDisplay() {
+      timerDisplay.textContent = `Time Left: ${remainingTime}s`;
+    }
+    
+    // Handle cell clicks (for human moves)
+    function handleCellClick(e) {
+      if (!gameActive) return;
+      if (isSinglePlayer && currentPlayer === 'O') return; // Ignore clicks during AI turn
+      
+      const cell = e.target;
+      const index = cell.getAttribute('data-index');
+      if (board[index] !== '') return; // Already occupied
+      
+      makeMove(cell, index, currentPlayer);
+    }
+    
+    // Process a move: update board, add animation, and check game status
+    function makeMove(cell, index, player) {
+      board[index] = player;
+      cell.textContent = player;
+      cell.classList.add(player.toLowerCase());
+      // Add "pop" animation to the cell
+      cell.classList.add('animate');
+      cell.addEventListener('animationend', () => {
+        cell.classList.remove('animate');
+      }, { once: true });
+      
+      clearTimer(); // Stop timer after move
+      
+      if (checkWin()) {
+        messageEl.textContent = `Player ${player} wins!`;
+        updateScore();
+        animateWinningLine(winningCombinationFound);
+        gameActive = false;
+      } else if (board.every(val => val !== '')) {
+        messageEl.textContent = "It's a Draw!";
+        gameActive = false;
+      } else {
+        switchTurn();
+      }
+    }
+    
+    // Check if a player has won on the current board
+    function checkWin() {
+      for (let condition of winningConditions) {
+        const [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          winningCombinationFound = condition;
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Update the scoreboard after a win
+    function updateScore() {
+      if (currentPlayer === 'X') {
+        scoreX++;
+        scoreXEl.textContent = `X: ${scoreX}`;
+      } else {
+        scoreO++;
+        scoreOEl.textContent = `O: ${scoreO}`;
+      }
+    }
+    
+    // Switch turns between players
+    function switchTurn() {
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      messageEl.textContent = `Player ${currentPlayer}'s turn`;
+      startTimer();
+      // In single-player mode, trigger AI move for O
+      if (isSinglePlayer && currentPlayer === 'O') {
+        setTimeout(aiMove, 500); // Brief delay for a natural feel
+      }
+    }
+    
+    // ------------------- MINIMAX AI IMPLEMENTATION -------------------
+    // Check if a given player wins on a board state (used for minimax)
+    function checkWinner(boardState, player) {
+      for (let condition of winningConditions) {
+        if (
+          boardState[condition[0]] === player &&
+          boardState[condition[1]] === player &&
+          boardState[condition[2]] === player
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Get array of empty cell indices from a board state
+    function getEmptyIndices(boardState) {
+      return boardState.reduce((acc, val, idx) => {
+        if (val === '') acc.push(idx);
+        return acc;
+      }, []);
+    }
+    
+    // Minimax algorithm implementation for perfect AI play
+    function minimax(newBoard, player) {
+      const availSpots = getEmptyIndices(newBoard);
+      
+      if (checkWinner(newBoard, 'X')) {
+        return { score: -10 };
+      } else if (checkWinner(newBoard, 'O')) {
+        return { score: 10 };
+      } else if (availSpots.length === 0) {
+        return { score: 0 };
+      }
+      
+      const moves = [];
+      
+      for (let i = 0; i < availSpots.length; i++) {
+        const move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+        
+        if (player === 'O') {
+          const result = minimax(newBoard, 'X');
+          move.score = result.score;
+        } else {
+          const result = minimax(newBoard, 'O');
+          move.score = result.score;
+        }
+        
+        newBoard[availSpots[i]] = '';
+        moves.push(move);
+      }
+      
+      let bestMove;
+      if (player === 'O') {
+        let bestScore = -Infinity;
+        moves.forEach(m => {
+          if (m.score > bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        });
+      } else {
+        let bestScore = Infinity;
+        moves.forEach(m => {
+          if (m.score < bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        });
+      }
+      return bestMove;
+    }
+    
+    // AI move using minimax for perfect play
+    function aiMove() {
+      if (!gameActive) return;
+      const bestMove = minimax(board.slice(), 'O');
+      if (typeof bestMove.index !== 'undefined') {
+        const cell = document.querySelector(`.cell[data-index="${bestMove.index}"]`);
+        makeMove(cell, bestMove.index, 'O');
+      }
+    }
+    // ------------------- END OF MINIMAX AI -------------------
+    
+    // Animate and draw an RGB cycling winning line through the winning combination
+    function animateWinningLine(winningCombo) {
+      const firstCell = document.querySelector(`.cell[data-index="${winningCombo[0]}"]`);
+      const lastCell = document.querySelector(`.cell[data-index="${winningCombo[2]}"]`);
+      const boardRect = gameBoard.getBoundingClientRect();
+      const firstRect = firstCell.getBoundingClientRect();
+      const lastRect = lastCell.getBoundingClientRect();
+      
+      // Calculate center positions relative to the board container
+      const x1 = firstRect.left + firstRect.width / 2 - boardRect.left;
+      const y1 = firstRect.top + firstRect.height / 2 - boardRect.top;
+      const x2 = lastRect.left + lastRect.width / 2 - boardRect.left;
+      const y2 = lastRect.top + lastRect.height / 2 - boardRect.top;
+      
+      const deltaX = x2 - x1;
+      const deltaY = y2 - y1;
+      const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+      
+      winningLine.style.width = length + 'px';
+      winningLine.style.top = y1 + 'px';
+      winningLine.style.left = x1 + 'px';
+      winningLine.style.transform = `rotate(${angle}deg)`;
+      winningLine.style.opacity = 1;
+    }
+    
+    // Reset the game board for a new round (scores persist)
+    function resetGame() {
+      board = Array(9).fill('');
+      gameActive = true;
+      currentPlayer = 'X';
+      messageEl.textContent = `Player ${currentPlayer}'s turn`;
+      cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('win', 'x', 'o');
+      });
+      winningLine.style.opacity = 0;
+      clearTimer();
+      startTimer();
+    }
+    
+    // Toggle between Two Player and Single Player mode
+    function toggleMode() {
+      isSinglePlayer = !isSinglePlayer;
+      modeToggleBtn.textContent = isSinglePlayer ? 'Switch to Two Player' : 'Switch to Single Player';
+      resetGame();
+    }
+    
+    // Event Listeners
+    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+    restartBtn.addEventListener('click', resetGame);
+    themeToggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-theme');
+    });
+    modeToggleBtn.addEventListener('click', toggleMode);
+    
+    // Help Modal functionality
+    helpBtn.addEventListener('click', () => {
+      helpModal.style.display = 'block';
+    });
+    closeModal.addEventListener('click', () => {
+      helpModal.style.display = 'none';
+    });
+    window.addEventListener('click', (event) => {
+      if (event.target == helpModal) {
+        helpModal.style.display = 'none';
+      }
+    });
+    
+    // Initialize game
+    startTimer();
+    messageEl.textContent = `Player ${currentPlayer}'s turn`;
+  </script>
+</body>
+</html>
