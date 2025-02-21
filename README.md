@@ -1,6 +1,7 @@
 # Tic Tac Toe - Enhanced Compact Experience
 
-## Live Demo (aitoe.netlify.app)
+## [Live Demo](https://aitoe.netlify.app)
+
 
 
 ## Description
