@@ -1,9 +1,13 @@
 # Tic Tac Toe - Enhanced Compact Experience
 
+## Live Demo
+[Live Demo](aitoe.netlify.app)
+
+
 ## Description
 This project is a modern, self-contained Tic Tac Toe game built using plain HTML, CSS, and JavaScript. It offers a compact and engaging experience featuring a dynamic UI, move timers, and a perfect-play AI powered by the minimax algorithm. The game supports both Two Player and Single Player modes with a dark theme toggle for visual variety. Check out the main file in [index.html](./index.html).
 
-## Demo
+## Demo Video
 ![Demo Video](./demoVideo.gif)
 
 ## Interesting Techniques
